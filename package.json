@@ -30,8 +30,5 @@
   "bugs": {
     "url": "https://github.com/roam-ai/roam-js/issues"
   },
-  "homepage": "https://github.com/roam-ai/roam-js#readme",
-  "devDependencies": {
-    "webpack-cli": "^4.6.0"
-  }
+  "homepage": "https://github.com/roam-ai/roam-js#readme"
 }

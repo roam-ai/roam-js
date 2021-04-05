@@ -1,18 +1,37 @@
 {
   "name": "roam-js",
   "version": "1.0.0",
-  "description": "JS Roam.ai SDK",
+  "description": "Roam.ai Javascript SDK",
   "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node examples/project-subscription/index.js && node examples/group-subscription/index.js && node examples/user-subscription/index.js"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Roam.ai",
+  "license": "MIT",
   "dependencies": {
-    "https": "^1.0.0",
-    "mqtt": "^4.2.6",
-    "paho-mqtt": "^1.1.0",
-    "uuid4": "^2.0.2",
-    "ws": "^3.3.3"
+    "async-mqtt": "^2.6.1",
+    "axios": "^0.21.1",
+    "uuid4": "^2.0.2"
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roam-ai/roam-js.git"
+  },
+  "keywords": [
+    "roam-js",
+    "roam",
+    "geospark",
+    "roam",
+    "pub_sub"
+  ],
+  "bugs": {
+    "url": "https://github.com/roam-ai/roam-js/issues"
+  },
+  "homepage": "https://github.com/roam-ai/roam-js#readme",
+  "devDependencies": {
+    "webpack-cli": "^4.6.0"
   }
 }

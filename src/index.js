@@ -1,138 +1,227 @@
-var mqtt = require('mqtt')
-var https = require('https')
+var mqtt = require('async-mqtt')
 var uuid4 = require('uuid4')
 var crypto = require('crypto');
-//creating hash object 
+var axios = require('axios').default;
+var debug = require('debug')('roam-js')
 var hash = crypto.createHash('sha512');
+
+// Constants used for Subscriptions
 const host = 'sdk.geospark.co'
-const salt = 'x9nFgM1ioxAOPmT3Fdyeh483lerc1J7k'
-const authorizerName = 'iot-authorizer'
+const salt = 'QOuQ2Wbjo7JoweHgmyyRiNdGwjwb9Uuh'
+const authorizerName = 'iot-authorizer-pk'
 const IOTURL = 'az91jf6dri5ey-ats.iot.eu-central-1.amazonaws.com'
 const prefix = ''
 
-function fetch(apiKey , url){
-    var options = {
-        host: host,
-        path: url,
-        port: '443',
-        headers: {'api-key': apiKey},
-        method: 'GET'
-    }
-    const req = https.request(options, res=>{
-        if (res.statusCode == 410){
-            throw "Invalid API Key"
-        }
-        res.on('data', d=>{
-            data = JSON.parse(d)['data']
-            if (data!=undefined){
-                return data
-            } 
-            else{
-                throw "Unknown Error"
+
+// apiCall is used to made backend API calls to validate Key
+// and to get necessary details for subscription
+function apiCall(apiKey, path){
+    var url = 'https://' + host + path;
+    return new Promise((resolve, reject)=>{
+
+        axios.get(url,{
+            headers: {
+                'sdk-key': apiKey
             }
+        }).then((resp)=>{
+
+            const statusCode = resp.status
+            if (statusCode == 410) {
+                reject("Invalid Key");
+            }
+            const responseData = resp.data
+            if( 'data' in responseData){
+                resolve( responseData['data'])
+            }
+            else {
+                debug(responseData.toString())
+                reject("Unknown Error");
+            }
+        }).catch((err)=>{
+            reject(err)
         })
-
-        res.on('error', (error) => {
-                throw "Error while hitting backend" + error
-            })
-
+    
     })
-
 }
 
+// generateCredentials is used to dynamically create the credentials 
+// required to subscribe
 function generateCredentials(apiKey){
     timestamp = Date.now()
     clientID = apiKey + '_' + uuid4()
-    username = 'sdk_'+ timestamp + '?x-amz-customauthorizer-name='+ authorizerName
+    username = 'pk_'+ timestamp + '?x-amz-customauthorizer-name='+ authorizerName
     password = hash.update(apiKey+timestamp+salt, 'utf-8').digest('hex')
-
-    return clientID , username , password
+    return {clientID , username , password}
 }
 
 
-var Roam =  class {
-    constructor(apiKey){
-        data = fetch(apiKey, '/api/details')
-        account_id = data['account_id']
-        project_id = data['project_id']
-        if (account_id==undefined || project_id==undefined){
-            throw "Unknown Error"
+// Roam is the default primary class for JS sdk
+class Roam  {
+    // Constructor for Roam. Takes in parameter from initialize function
+    constructor(topicPrefix, apiKey, conn){
+        debug('Constructing Roam class')
+        if(typeof(topicPrefix)!='string' ||  typeof(conn)!='object' || typeof(apiKey)!='string' ){
+            throw new Error('Cannot construct roam class manually. Please use Initialize(apikey)')
         }
         this.apiKey = apiKey 
-        this.accountID = account_id
-        this.projectID = project_id
-        this.topicPrefix = 'locations/'+this.accountID+'/'+this.projectID+'/'
-        var clientID , username , password = generateCredentials(apiKey)
-        this.mqtt = mqtt.connect('wss://'+ IOTURL+'/mqtt',{
-        username:username,
-        password: password,
-        protocol: 'wss',
-        host: IOTURL,
-        port:443,
-        clientId: clientID
-        })
-        this.mqtt.on('message', (topic, message)=>{
-            console.log(message.toString())
-        })
+        this.topicPrefix = topicPrefix
+        this.mqttConnection = conn
     }
+    // disconnect method disconnects the connection to the Pub/Sub Server
     disconnect(){
-        this.mqtt.end()
+        return new Promise((resolve,reject)=>{
+            this.mqttConnection.end()
+            .then((result)=>{
+                resolve("Disconnected Successfully")
+            })
+            .catch((err)=>{
+                reject("Error while disconnecting: "+ err)
+            })
+
+        })
     }
+    // setCallback is a method to set callback for roam-js SDK
+    // For every message received, callback function will be called.
+    // Callback function should have one parameter which will contain 
+    // the location data.
     setCallback(cb){
-        this.mqtt.on('message', (topic, message)=>{
+        this.mqttConnection.on('message', (topic, message)=>{
             cb(message.toString())
         })
     }
     
+    //projectSubscription is a method used to create a 
+    // project level subscription. It takes no parameters
     projectSubscription(){
-        var topic = this.topicPrefix +'+'
-        return new Subscription(this.mqtt ,topic)
+        return new Promise((resolve,reject)=>{
+            var topic = this.topicPrefix +'+'
+            resolve( new Subscription(this.mqttConnection ,topic))
+        })
     }
+    //userSubscription is a method used to create a user level subscription
+    // It takes a single user id or a array of users as input parameter
     userSubscription(user){
-        if (Array.isArray(user)){
-            user.map((e)=>{
-                return this.topicPrefix + e
-            })
-            return new Subscription(this.mqtt , user)
-        }
-        topic = this.topicPrefix+user
-        return new Subscription(this.mqtt, topic)
+        return new Promise((resolve, reject)=>{
+            if (Array.isArray(user)){
+                var topics = user.map((e)=>{
+                    return this.topicPrefix + e
+                })
+                resolve( new Subscription(this.mqttConnection , topics))
+            }
+            var topic = this.topicPrefix+user
+            resolve( new Subscription(this.mqttConnection, topic))
+        })
+        
     }
-    groupSubscription(groupID){
-        data = fetch(this.apiKey , '/api/group/'+groupID)
-        users = data['user_ids']
-        if (Array.isArray(users) && users.length>0){
-            users.map((e)=>{
+    //groupSubscription is a method used to create a group level subscription
+    // It takes group id as input parameter
+    groupSubscription(groupID){ 
+        return new Promise((resolve, reject)=>{
+            apiCall(this.apiKey , '/api/group/'+groupID)
+            .then((data)=>{
+                var users = data['user_ids']
+                if (Array.isArray(users) && users.length>0){
+                var topics = users.map((e)=>{
                 return this.topicPrefix + e
-            })
-            return new Subscription(this.mqtt, users)
-        }
-        throw "Invalid Group ID"
+                })
+                resolve( new Subscription(this.mqttConnection, topics))}
+                else{
+                    reject("No users in group")
+                }
+            }).catch((err)=>{reject("Invalid Group ID")})
+        })
     }
 }
 
+// Subscription is an internal class to maintain subscription for roam-js
 var Subscription = class{
+    // Constructor which takes mqtt connection and topic name as parameters
+    // Topic can be string or array
     constructor(connection , topic){
         this.connection = connection
         this.topic = topic
+        debug('Subscription created successfully for topics: ', topic)
     }
+    // Subscribe subscribes to the topic/topics for which the subscription is created
     subscribe(){
-        this.connection.subscribe(this.topic, (err)=>{
-            console.error(err)
-        })
+
+            if (!this.connection.connected && !this.connection.reconnecting){
+                this.connection.reconnect()     
+            }
+            return new Promise((resolve,reject)=>{
+                this.connection.subscribe(this.topic)
+                .then((result)=>{
+                    debug("Subscribed to topics sucessfully: ", result)
+                    resolve("Subscribed to topics sucessfully: " +  JSON.stringify(result))
+                })
+                .catch((err)=>{
+                    debug("Error while subscribing :", err)
+                    reject(err)
+                })
+
+            })
     }
+    // Unsubscribe method unsubscribes from the subscription topic/topics
     unsubscribe(){
-        this.connection.unsubscribe(this.topic)
+        return new Promise((resolve,reject)=>{
+            this.connection.unsubscribe(this.topic)
+            .then((result)=>{
+                debug("Unsubscribed successfully from topics: ", this.topic)
+                resolve("Unsubscribed successfully")  
+            })
+            .catch((err)=>{
+                debug("Error while unsubscribing: ", err)
+                reject("Error while unsubscribing: ", err)
+            })
+        })
     }
 }
 
+function Initialize(apikey) {
+    debug('Initializing Roam-js');
+    debug('Verifying Keys and fetching required details');
+    return new Promise((resolve, reject)=>{
+        apiCall(apikey, '/api/details')
+        .then((data) => {
+            debug("Details of the key:", data)
+            const accountID = data['account_id']
+            const projectID = data['project_id']
+            topicPrefix = prefix+'locations/'+accountID+'/'+projectID+'/'
+
+            var credentials = generateCredentials(apikey)
+            var clientID = credentials.clientID;
+            var username = credentials.username;
+            var password = credentials.password;
+            mqtt.connectAsync('wss://'+ IOTURL+'/mqtt',{
+            username: username,
+            password: password,
+            protocol: 'wss',
+            host: IOTURL,
+            port:443,
+            clientId: clientID,
+            resubscribe: true,
+            keepalive: 30
+            })
+            .then((mqttConnection)=>{
+                    if (mqttConnection.connected){
+                        debug("Connected to Server Successfully")
+                        resolve(new Roam(topicPrefix,apikey,mqttConnection))
+                    }
+                })
+            .catch((err)=>{
+                    debug("Error while connection: " ,err)
+                    reject("Error while connection: " + err)
+                })
+        })
+        .catch((err)=>{
+            debug("Error with API call: ", err)
+            reject("Error while API call: " + err )
+        });
+    })
+}
 
 
-// var Initialize = function(api_key) {
-//     return new Roam(api_key)
-// }
-
-export {Roam, Subscription};
+module.exports.Initialize = Initialize;
 
 
 

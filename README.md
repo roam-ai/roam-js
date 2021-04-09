@@ -4,7 +4,9 @@
   </a>
   <br />
 </p>
-<img alt="npm" src="https://img.shields.io/npm/v/roam-js">
+
+[![npm version](https://badge.fury.io/js/roam-js.svg)](https://badge.fury.io/js/roam-js)
+[![Npm Publish](https://github.com/roam-ai/roam-js/actions/workflows/npm-publish.yml/badge.svg)](https://github.com/roam-ai/roam-js/actions/workflows/npm-publish.yml)
 
 # Official Roam Javascript SDK
 

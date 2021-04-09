@@ -6,7 +6,7 @@
 </p>
 <img alt="npm" src="https://img.shields.io/npm/v/roam-js">
 
-# roam-js
+# Official Roam Javascript SDK
 
 A Javascript library for Roam Location Subscription. It is used to subscribe to user's locations at project level or location of a single user.
 
@@ -143,3 +143,10 @@ To disconnect from our server, call disconnect method on the client.
 ```
 client.disconnect()
 ```
+
+## Example
+See example codes in `examples/`.
+To run the example, clone this repository, add your sdk key as environment veriable `pk` and run the app.
+
+## Need Help?
+If you have any problems or issues over our SDK, feel free to create a github issue or submit a request on [Roam Help](https://geosparkai.atlassian.net/servicedesk/customer/portal/2).

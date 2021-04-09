@@ -1,3 +1,10 @@
+<p align="center">
+  <a href="https://roam.ai" target="_blank" align="left">
+    <img src="https://github.com/roam-ai/roam-js/blob/master/logo.png?raw=true" width="180">
+  </a>
+  <br />
+</p>
+[![npm](https://img.shields.io/npm/v/roam-js)]
 # roam-js
 
 A Javascript library for Roam Location Subscription. It is used to subscribe to user's locations at project level or location of a single user.

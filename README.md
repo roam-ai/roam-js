@@ -4,7 +4,8 @@
   </a>
   <br />
 </p>
-[![npm](https://img.shields.io/npm/v/roam-js)]
+<img alt="npm" src="https://img.shields.io/npm/v/roam-js">
+
 # roam-js
 
 A Javascript library for Roam Location Subscription. It is used to subscribe to user's locations at project level or location of a single user.

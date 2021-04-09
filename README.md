@@ -18,10 +18,15 @@ roam-js supports subscription to the following location data:
 Note: Before you get started [signup to our dashboard](https://roam.ai/) to get your Publishable Keys.
 
 # Installation:
+
+## Via NPM
 You can install our package using npm.
 ```
 npm install roam-js
 ```
+
+## Via CDN
+roam-js bundle is available through http://unpkg.com, specifically at https://unpkg.com/roam-js/dist/roam.min.js. See http://unpkg.com for the full documentation on version ranges.
 
 # Usage
 You can think this library as a wrapper around our REST API which needs your Publishable Key for authorization and it works as per project level. It is fairly simple to use:
@@ -137,17 +142,4 @@ This will return a promise with a message whether unsubscribe was subscribed suc
 To disconnect from our server, call disconnect method on the client.
 ```
 client.disconnect()
-```
-
-# Browser
-## Via CDN
-roam-js bundle is available through http://unpkg.com, specifically at https://unpkg.com/roam-js/dist/roam.min.js. See http://unpkg.com for the full documentation on version ranges.
-
-## Browserify
-In order to use roam-js as a browserify module you can either require it in your browserify bundles or build it as a stand alone module. The exported module is AMD/CommonJs compatible and it will add an object in the global space.
-```
-npm install -g browserify
-cd node_modules/roam-js
-npm install .
-browserify roam.js -s roam > browserRoam.js
 ```

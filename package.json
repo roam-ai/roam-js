@@ -1,12 +1,11 @@
 {
   "name": "roam-js",
   "version": "1.0.0",
-  "description": "Roam.ai Javascript SDK",
+  "description": "Roam Javascript SDK to listen to location updates.",
   "main": "src/index.js",
   "scripts": {
     "test": "node examples/project-subscription/index.js && node examples/group-subscription/index.js && node examples/user-subscription/index.js"
   },
-  "author": "Roam.ai",
   "license": "MIT",
   "dependencies": {
     "async-mqtt": "^2.6.1",

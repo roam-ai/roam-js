@@ -10,9 +10,9 @@
 
 # Official Roam Javascript SDK
 
-A Javascript library for Roam Location Subscription. It is used to subscribe to user's locations at project level or location of a single user.
+A Javascript library for Roam Location and Events Subscription. It is used to subscribe to user's locations and events at project level or location of a single user.
 
-roam-js supports subscription to the following location data:
+roam-js supports subscription to the following location and events data:
 - Specific user 
 - All users of a group
 - All users of project
@@ -35,9 +35,14 @@ You can think this library as a wrapper around our REST API which needs your Pub
 - `Initialize()` the package with the publishable key. This will return an instance of our client.
 - Define your custom callback function. `client.setCallback(fn)`
 - Create an instance of subscription. You can create subscription for project, user or group of users using the following methods on client:
-    + `projectSubscription()` takes no parameters
-    + `groupSubscription(greoupID)` - takes in group ID as parameter
-    + `userSubscription(userID)` - takes in a single user ID or a array of user ids as parameter
+    - Location Subscriptions:
+        + `projectSubscription()` takes no parameters
+        + `groupSubscription(greoupID)` - takes in group ID as parameter
+        + `userSubscription(userID)` - takes in a single user ID or a array of user ids as parameter
+    - Events Subscription:
+        + `projectEventsSubscription()` takes no parameters
+        + `groupEventsSubscription(greoupID)` - takes in group ID as parameter
+        + `userEventsSubscription(userID)` - takes in a single user ID or a array of user ids as parameter
 - Use `subscribe()` method on the created subscription to start receiving realtime location data
 - To stop receiving data, call unsubscribe method. 
 - To `disconnect()` call disconnect method on client.
@@ -64,18 +69,18 @@ roam.Initialize(pk)
                     })
                 })
                 .catch((err)=>{
-                   throw(err)
+                   console.log(err)
                 })
             }
             )
         })
         .catch((err)=>{
-           throw(err)
+           console.log(err)
         })
         
 })
 .catch((err)=>{
-    throw(err)
+    console.log(err)
 })
 ```
 
@@ -104,6 +109,9 @@ roam-js supports 3 types of subscriptions:
  - project subscription
  - user subscription
  - group subscription
+ - project events subscription
+ - user events subscription
+ - group events subscription
 
 ### Project Subscription
 To create a subscription that allow you to subscribe to location data of all users within the project, you can use `projectSubscription()` method of client. It does not take in any parameter.
@@ -118,13 +126,34 @@ subscription = await client.groupSubscription('<Enter group id>')
 ```
 
 ### User Subscription
-To create a subscription that allow you to subscribe to location data a user or multiple usesrs, you can use `userSubscription(groupID)` method of client. It takes user ID as parameter. 
+To create a subscription that allow you to subscribe to location data a user or multiple usesrs, you can use `userSubscription(user_1)` method of client. It takes user ID as parameter. 
 ```
-subscription = await client.groupSubscription('user_1')
+subscription = await client.userSubscription('user_1')
 ```
 To subscribe to multiple users pass in user ids in an array as parameter
 ```
-subscription = await client.groupSubscription(['user_1','user_2'])
+subscription = await client.userSubscription(['user_1','user_2'])
+```
+### Project Events Subscription
+To create a subscription that allow you to subscribe to location data of all users within the project, you can use `projectEventsSubscription()` method of client. It does not take in any parameter.
+```
+subscription = await client.projectEventsSubscription()
+```
+
+### Group Events Subscription
+To create a subscription that allow you to subscribe to location data of all users within the group, you can use `groupEventsSubscription(groupID)` method of client. It takes group ID as parameter.
+```
+subscription = await client.groupEventsSubscription('<Enter group id>')
+```
+
+### User Events Subscription
+To create a subscription that allow you to subscribe to location data a user or multiple usesrs, you can use `userEventsSubscription(groupID)` method of client. It takes user ID as parameter. 
+```
+subscription = await client.userEventsSubscription('user_1')
+```
+To subscribe to multiple users pass in user ids in an array as parameter
+```
+subscription = await client.userEventsSubscription(['user_1','user_2'])
 ```
 ### Subscribe to a subscription
 All of the above methods will give you an subscription promise. You can subscribe to the subscription by using the following:

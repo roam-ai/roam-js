@@ -1,10 +1,10 @@
 {
   "name": "roam-js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Roam Javascript SDK to listen to location updates.",
   "main": "src/index.js",
   "scripts": {
-    "test": "node examples/project-subscription/index.js && node examples/group-subscription/index.js && node examples/user-subscription/index.js"
+    "test": "node examples/location-subscriptions/project-subscription/index.js && node examples/location-subscriptions/group-subscription/index.js && node examples/location-subscriptions/user-subscription/index.js&&node examples/event-subscriptions/project-event-subscription/index.js && node examples/event-subscriptions/group-event-subscription/index.js && node examples/event-subscriptions/user-event-subscription/index.js"
   },
   "license": "MIT",
   "dependencies": {

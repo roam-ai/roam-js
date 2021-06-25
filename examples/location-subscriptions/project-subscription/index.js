@@ -1,4 +1,4 @@
-var roam = require("../../src/index")
+var roam = require("../../../src/index")
 
 const pk = process.env.roam_pk;
 
@@ -19,16 +19,16 @@ roam.Initialize(pk)
                     })
                 })
                 .catch((err)=>{
-                   throw(err)
+                   console.log(err)
                 })
             }
             )
         })
         .catch((err)=>{
-           throw(err)
+           console.log(err)
         })
         
 })
 .catch((err)=>{
-    throw(err)
+    console.log(err)
 })

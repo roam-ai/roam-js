@@ -1,12 +1,13 @@
-var roam = require("../../src/index")
+var roam = require("../../../src/index")
 
 const pk = process.env.roam_pk;
+const groupID = process.env.group_id;
 
 roam.Initialize(pk)
     .then((client)=>{
-        client.setCallback(function(message){console.log(message)})
+        client.setCallback(function(message, messageType,userID){console.log(message , " type:", messageType , " user: ", userID)})
         
-        client.projectSubscription()
+        client.groupSubscription(groupID)
         .then((subscription)=>{
             subscription.subscribe()
             .then((msg)=>{
@@ -19,16 +20,16 @@ roam.Initialize(pk)
                     })
                 })
                 .catch((err)=>{
-                   throw(err)
+                    console.log(err)
                 })
             }
             )
         })
         .catch((err)=>{
-           throw(err)
+            console.log(err)
         })
         
 })
 .catch((err)=>{
-    throw(err)
+    console.log(err)
 })

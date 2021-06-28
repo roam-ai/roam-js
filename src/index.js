@@ -8,8 +8,7 @@ var hash = crypto.createHash('sha512');
 // Constants used for Subscriptions
 const host = 'sdk.geospark.co'
 const salt = 'QOuQ2Wbjo7JoweHgmyyRiNdGwjwb9Uuh'
-const authorizerName = 'iot-authorizer-pk'
-const IOTURL = 'az91jf6dri5ey-ats.iot.eu-central-1.amazonaws.com'
+const IOTURL = 'js-mqtt.roam.ai'
 const prefix = ''
 
 
@@ -49,7 +48,7 @@ function apiCall(apiKey, path){
 function generateCredentials(apiKey){
     timestamp = Date.now()
     clientID = apiKey + '_' + uuid4()
-    username = 'pk_'+ timestamp + '?x-amz-customauthorizer-name='+ authorizerName
+    username = 'pk_'+ timestamp
     password = hash.update(apiKey+timestamp+salt, 'utf-8').digest('hex')
     return {clientID , username , password}
 }
@@ -58,13 +57,14 @@ function generateCredentials(apiKey){
 // Roam is the default primary class for JS sdk
 class Roam  {
     // Constructor for Roam. Takes in parameter from initialize function
-    constructor(topicPrefix, apiKey, conn){
+    constructor(topicPrefix,eventPrefix, apiKey, conn){
         debug('Constructing Roam class')
         if(typeof(topicPrefix)!='string' ||  typeof(conn)!='object' || typeof(apiKey)!='string' ){
             throw new Error('Cannot construct roam class manually. Please use Initialize(apikey)')
         }
         this.apiKey = apiKey 
         this.topicPrefix = topicPrefix
+        this.eventPrefix = eventPrefix
         this.mqttConnection = conn
     }
     // disconnect method disconnects the connection to the Pub/Sub Server
@@ -86,10 +86,51 @@ class Roam  {
     // the location data.
     setCallback(cb){
         this.mqttConnection.on('message', (topic, message)=>{
-            cb(message.toString())
+            var messageType = topic.split("/")[0]
+            var userID = topic.split("/").slice(-1)[0]
+            cb(message.toString(), messageType, userID)
         })
     }
-    
+    //userEventsSubscription is a method used to create a user level subscription to events
+    // It takes a single user id or a array of users as input parameter
+    userEventsSubscription(user){
+        return new Promise((resolve, reject)=>{
+            if (Array.isArray(user)){
+                var topics = user.map((e)=>{
+                    return this.eventPrefix + e
+                })
+                resolve( new Subscription(this.mqttConnection , topics))
+            }
+            var topic = this.eventPrefix+user
+            resolve( new Subscription(this.mqttConnection, topic))
+        })
+    }
+    //projectEventsSubscription is a method used to create a 
+    // project level subscription. It takes no parameters
+    projectEventsSubscription(){
+        return new Promise((resolve,reject)=>{
+            var topic = this.eventPrefix +'+'
+            resolve( new Subscription(this.mqttConnection ,topic))
+        })
+    }
+    //groupEventsSubscription is a method used to create a group level subscription
+    // It takes group id as input parameter
+    groupEventsSubscription(groupID){ 
+        return new Promise((resolve, reject)=>{
+            apiCall(this.apiKey , '/api/group/'+groupID)
+            .then((data)=>{
+                var users = data['user_ids']
+                if (Array.isArray(users) && users.length>0){
+                var topics = users.map((e)=>{
+                return this.eventPrefix + e
+                })
+                resolve( new Subscription(this.mqttConnection, topics))}
+                else{
+                    reject("No users in group")
+                }
+            }).catch((err)=>{reject("Invalid Group ID")})
+        })
+        }
     //projectSubscription is a method used to create a 
     // project level subscription. It takes no parameters
     projectSubscription(){
@@ -186,8 +227,8 @@ function Initialize(apikey) {
             debug("Details of the key:", data)
             const accountID = data['account_id']
             const projectID = data['project_id']
-            topicPrefix = prefix+'locations/'+accountID+'/'+projectID+'/'
-
+            locationTopicPrefix = prefix+'locations/'+accountID+'/'+projectID+'/'
+            eventTopicPrefix = prefix + 'events/'+accountID + '/' + projectID + '/'
             var credentials = generateCredentials(apikey)
             var clientID = credentials.clientID;
             var username = credentials.username;
@@ -205,7 +246,7 @@ function Initialize(apikey) {
             .then((mqttConnection)=>{
                     if (mqttConnection.connected){
                         debug("Connected to Server Successfully")
-                        resolve(new Roam(topicPrefix,apikey,mqttConnection))
+                        resolve(new Roam(locationTopicPrefix, eventTopicPrefix,apikey,mqttConnection))
                     }
                 })
             .catch((err)=>{

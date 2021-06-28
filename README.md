@@ -101,8 +101,8 @@ Once initialized, we recommend setting up a callback function. This callback fun
 2. messageType: locations or events message type
 3. userID: the userID to which the location or event belongs.
 ```
-var callback = function(data, messageType, user){
-    console.log(data, messageType, user)
+var callback = function(message, messageType, userID){
+    console.log(message, messageType, userID)
 }
 client.setCallback(callback)
 ```

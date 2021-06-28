@@ -1,3 +1,6 @@
+## 0.0.3
+* Added support for browsers to use roam-js.
+
 ## 0.0.2
 * Added support to subscribe to events data for users, project or user groups of your project in Roam. The various events sources and types which are part of geospark are:
  - __geofence events:__ entry and exit

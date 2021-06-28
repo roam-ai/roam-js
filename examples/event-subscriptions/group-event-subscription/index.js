@@ -5,7 +5,7 @@ const groupID = process.env.group_id;
 
 roam.Initialize(pk)
     .then((client)=>{
-        client.setCallback(function(message){console.log(message)})
+        client.setCallback(function(message, messageType,userID){console.log(message , " type:", messageType , " user: ", userID)})
         
         client.groupEventsSubscription(groupID)
         .then((subscription)=>{

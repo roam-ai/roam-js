@@ -4,7 +4,7 @@ const pk = process.env.roam_pk;
 
 roam.Initialize(pk)
     .then((client)=>{
-        client.setCallback(function(message){console.log(message)})
+        client.setCallback(function(message, messageType,userID){console.log(message , " type:", messageType , " user: ", userID)})
         
         client.projectEventsSubscription()
         .then((subscription)=>{

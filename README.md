@@ -54,7 +54,7 @@ const pk = process.env.roam_pk;
 
 roam.Initialize(pk)
     .then((client)=>{
-        client.setCallback(function(message){console.log(message)})
+        client.setCallback(function(message, messageType, userID){console.log(message, messageType, userID)})
         
         client.projectSubscription()
         .then((subscription)=>{
@@ -96,10 +96,13 @@ client = await roam.Initialize("<Your publishable key>")
 ```
 
 ## Setting up callback function
-Once initialized, we recommend setting up a callback function. This callback function will be called once you receive any location data from our backend.
+Once initialized, we recommend setting up a callback function. This callback function will be called once you receive any data from our backend. We provide 3 parameters for callback function in the following order
+1. message : Actual message sent from the server
+2. messageType: locations or events message type
+3. userID: the userID to which the location or event belongs.
 ```
-var callback = function(data){
-    console.log(data)
+var callback = function(data, messageType, user){
+    console.log(data, messageType, user)
 }
 client.setCallback(callback)
 ```

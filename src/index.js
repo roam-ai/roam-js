@@ -86,7 +86,9 @@ class Roam  {
     // the location data.
     setCallback(cb){
         this.mqttConnection.on('message', (topic, message)=>{
-            cb(message.toString())
+            var messageType = topic.split("/")[0]
+            var userID = topic.split("/").slice(-1)[0]
+            cb(message.toString(), messageType, userID)
         })
     }
     //userEventsSubscription is a method used to create a user level subscription to events

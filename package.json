@@ -1,6 +1,6 @@
 {
   "name": "roam-js",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Roam Javascript SDK to listen to location updates.",
   "main": "src/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "dependencies": {
     "async-mqtt": "^2.6.1",
     "axios": "^0.21.1",
-    "uuid4": "^2.0.2"
+    "uuid": "^8.3.2"
   },
   "directories": {
     "example": "examples"

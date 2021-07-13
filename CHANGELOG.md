@@ -1,3 +1,5 @@
+## 0.0.4
+* Changes to dependency from uuid4 to uuid to support react.
 ## 0.0.3
 * Added support for browsers to use roam-js.
 

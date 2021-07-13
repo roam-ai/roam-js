@@ -1,5 +1,5 @@
 var mqtt = require('async-mqtt')
-var uuid4 = require('uuid4')
+var uuid = require('uuid')
 var crypto = require('crypto');
 var axios = require('axios').default;
 var debug = require('debug')('roam-js')
@@ -47,7 +47,7 @@ function apiCall(apiKey, path){
 // required to subscribe
 function generateCredentials(apiKey){
     timestamp = Date.now()
-    clientID = apiKey + '_' + uuid4()
+    clientID = apiKey + '_' + uuid.v4()
     username = 'pk_'+ timestamp
     password = hash.update(apiKey+timestamp+salt, 'utf-8').digest('hex')
     return {clientID , username , password}

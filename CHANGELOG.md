@@ -1,3 +1,5 @@
+## 0.0.5
+* Added support to lister to other users from different proejct of same account.
 ## 0.0.4
 * Changes to dependency from uuid4 to uuid to support react.
 ## 0.0.3

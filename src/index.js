@@ -227,7 +227,7 @@ function Initialize(apikey) {
             debug("Details of the key:", data)
             const accountID = data['account_id']
             const projectID = data['project_id']
-            locationTopicPrefix = prefix+'locations/'+accountID+'/'+projectID+'/'
+            locationTopicPrefix = prefix+'locations/'+accountID+'/'+'+'+'/'
             eventTopicPrefix = prefix + 'events/'+accountID + '/' + projectID + '/'
             var credentials = generateCredentials(apikey)
             var clientID = credentials.clientID;
